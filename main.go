@@ -6,10 +6,10 @@ import (
 	"os"
 
 	ishell "github.com/abiosoft/ishell"
-	web "github.com/aibfarm/aibfarm/web"
+	web "github.com/aibfarm/web"
 
 	// web "github.com/aibfarm/aibfarm/web"
-	config "github.com/aibfarm/aibfarm/config"
+	config "github.com/aibfarm/config"
 )
 
 var GitCommit string
@@ -36,7 +36,11 @@ func main() {
 		switch arg {
 
 		case "test":
-			web.Test()
+			web.Start_WebServer()
+
+		case "web":
+			web.Start_WebServer()
+
 		case "sample":
 			config.SampleConfig()
 

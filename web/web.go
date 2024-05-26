@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	config "github.com/aibfarm/aibfarm/config"
-	factory "github.com/aibfarm/aibfarm/web/factory"
+	config "github.com/aibfarm/config"
+	factory "github.com/aibfarm/web/factory"
 	"github.com/gin-contrib/multitemplate"
 	gin "github.com/gin-gonic/gin"
 )
@@ -43,14 +43,14 @@ func Start_WebServer() {
 	})
 
 	//!-------OKRice Debuging / Monitoring
-	authorized.GET("/okriceV2.debug", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "okrice.debug.tmpl.html", gin.H{
+	authorized.GET("/aibfarm.debug", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "aibfarm.debug.tmpl.html", gin.H{
 			"menulist":     factory.MakeMenu(),
-			"api_endpoint": config.AIBFARM_CONFIG.API_ENDPOINT, //"ws://192.168.2.131:20889",
+			"api_endpoint": config.AIBFarmConfig.API_ENDPOINT, //"ws://192.168.2.131:20889",
 		})
 	})
 
-	r.Run(config.OKRICE_DASH_PORT) // listen and serve on 0.0.0.0:
+	r.Run(config.AIBFARM_DASH_PORT) // listen and serve on 0.0.0.0:
 
 }
 
