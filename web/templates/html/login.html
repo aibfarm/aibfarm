@@ -1,0 +1,155 @@
+<!doctype html>
+<!-- 
+* Bootstrap Simple Admin Template
+* Version: 2.1
+* Author: Alexis Luna, Temple
+* Website: https://github.com/9cat/bootstrap-simple-admin-template
+-->
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Login | Bootstrap Simple Admin Template</title>
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/auth.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="auth-content">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <img class="brand" src="assets/img/bootstraper-logo.png" alt="bootstraper logo">
+                    </div>
+                    <h6 class="mb-4 text-muted">Login to your account</h6>
+                    <!-- <form action="" method=""> -->
+                    <div class="mb-3 text-start">
+                        <label for="email" class="form-label">Email adress</label>
+                        <input id="auth-username" type="email" class="form-control" placeholder="Enter Email" required>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="password" class="form-label">Password</label>
+                        <input id="auth-password" type="password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <div class="form-check">
+                            <input class="form-check-input" name="remember" type="checkbox" value="" id="check1">
+                            <label class="form-check-label" for="check1">
+                                Remember me on this device
+                            </label>
+                        </div>
+                    </div>
+                    <button id="auth-login" class="btn btn-primary shadow-2 mb-4">Login</button>
+                    <!-- </form> -->
+                    <p class="mb-2 text-muted">Forgot password? <a href="forgot-password.html">Reset</a></p>
+                    <p class="mb-0 text-muted">Don't have account yet? <a href="signup.html">Signup</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+        $('#auth-login').click(function () {
+            $.ajax({
+                type: "POST",
+                url: "/login",
+                data: {
+                    username: $('#auth-username').val(),
+                    password: $('#auth-password').val(),
+                },
+                success: function (data) {
+                    console.log(data)
+                    localStorage.token = data.token;
+                    localStorage.setItem('authToken', data.token);
+                    
+                    //   alert('Got a token from the server! Token: ' + data.token);        
+                    // alert('Got a token from the server! Token: ' + data.user); 
+                    document.cookie = `jwt=${data.token}; max-age=${60 * 60 * 24 * 7}`
+                    window.location.href = "/";
+                    localStorage.clientName = data.token;
+
+                    
+
+                },
+                error: function () {
+                    alert("Login Failed");
+                }
+            });
+        });
+    </script>
+
+
+    <div>
+        <button id="test">Test Loggedin</button>
+        <button id="goodLogin">Good Login</button>
+        <button id="badLogin">Bad Login</button>
+        <button id="logout">Logout</button>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#test').click(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: '/auth/hello',
+                    beforeSend: function (xhr) {
+                        if (localStorage.token) {
+                            xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.token);
+                        }
+                    },
+                    success: function (data) {
+                        alert('Hello ' + data.userName + '! You have successfully accessed to /api/profile.');
+                    },
+                    error: function () {
+                        alert("Sorry, you are not logged in.");
+                    }
+                });
+            });
+            $('#goodLogin').click(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    data: {
+                        username: "admin",
+                        password: "admin"
+                    },
+                    success: function (data) {
+                        localStorage.token = data.token;
+                        alert('Got a token from the server! Token: ' + data.token);
+                    },
+                    error: function () {
+                        alert("Login Failed");
+                    }
+                });
+            });
+            $('#badLogin').click(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    data: {
+                        username: "john.doe",
+                        password: "foobarfoobar"
+                    },
+                    success: function (data) {
+                        alert("ERROR: it is not supposed to alert.");
+                    },
+                    error: function () {
+                        alert("Login Failed");
+                    }
+                });
+            });
+            $('#logout').click(function () {
+                localStorage.clear();
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

@@ -1,14 +1,9 @@
 {{define "title"}} AIBFARM {{end}} {{define "content"}}
 
-
-
 <script>
   var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
   // console.log(API_ENDPOINT)
 </script>
-
-
-
 
 <style>
   /* Custom CSS for aligning the <th> elements */
@@ -152,10 +147,6 @@
   }
 </style>
 
-
-
-
-
 <div class="container-fluid">
   <div class="page-title">
     <h3> AIBFARM 调试窗口 </h3>
@@ -188,6 +179,38 @@
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
 
 
+      <table
+      id="table-position"
+      class="table  my-table table-striped">
+        <thead class="success">
+          <tr>
+            <th>ID</th>
+           
+            <th class="sticky-left">币种</th>
+            <th><a href="?sort=yield-up">↑</a>收益<a href="?sort=yield-down">↓</a></th>
+            <th>势</th>
+            <th>费率</th>
+            <th><a href="?sort=opens-up">↑</a>持仓<a href="?sort=opens-down">↓</a></th>
+            <th><a href="?sort=profit-up">↑</a>利润<a href="?sort=profit-down">↓</a></th>
+            <th><a href="?sort=insure-up">↑</a>保证<a href="?sort=insure-down">↓</a></th>
+            <th>价位</th>
+            <th>扣费</th>
+            <th>资时</th>
+            <th>保险</th>
+            
+            <th>最高记录价 </th>
+            <th>移动加仓价</th>
+            <th>回加仓价位</th>
+
+
+            <th>时差</th>
+
+          </tr>
+        </thead>
+        <tbody id="position"></tbody>
+      </table>
+
+
 
       <p class="text-muted">————————————————————— 加仓-潜标 【跟踪】 ————————————————————— </p>
 
@@ -212,6 +235,479 @@
 
 
 <script>
+
+
+  var myMap = {};
+
+
+
+  function animateCell(cellname) {
+    // const cell = document.getElementById('cell');
+    const cell = document.getElementById(cellname);
+    const oldValue = parseFloat(cell.textContent);
+    const newValue = getRandomNumber(); // Replace this with your logic to get the new cell value
+
+    // Add gradient-animation class to enable color gradient animation
+    cell.classList.add('gradient-animation');
+
+    // Check if the value has changed
+    if (oldValue !== newValue) {
+
+      // Add flash-animation class to enable flashing animation
+      cell.classList.add('flash-animation');
+
+      // Update the cell value
+      // cell.textContent = newValue;
+
+      // Remove the flash-animation class after a delay to restart the animation
+      setTimeout(() => {
+        cell.classList.remove('flash-animation');
+      }, 1000);
+    }
+
+    // Remove gradient-animation class after the animation completes
+    setTimeout(() => {
+      cell.classList.remove('gradient-animation');
+    }, 5000);
+  }
+
+  // Example function to get a random number for demonstration purposes
+  function getRandomNumber() {
+    return Math.floor(Math.random() * 100);
+  }
+
+  function animateRed(cellname) {
+    // const cell = document.getElementById('cell');
+    const cell = document.getElementById(cellname);
+
+    // Add gradient-animation class to enable color gradient animation
+    cell.classList.add('gradient-animation');
+
+    // Add flash-animation class to enable flashing animation
+    cell.classList.add('flashred-animation');
+
+
+    // Remove the flash-animation class after a delay to restart the animation
+    setTimeout(() => {
+      cell.classList.remove('flashred-animation');
+    }, 1000);
+
+    // Remove gradient-animation class after the animation completes
+    setTimeout(() => {
+      cell.classList.remove('gradient-animation');
+    }, 5000);
+  }
+
+  function animateGreen(cellname) {
+    // const cell = document.getElementById('cell');
+    const cell = document.getElementById(cellname);
+
+    // Add gradient-animation class to enable color gradient animation
+    cell.classList.add('gradient-animation');
+
+    // Add flash-animation class to enable flashing animation
+    cell.classList.add('flashgreen-animation');
+
+
+    // Remove the flash-animation class after a delay to restart the animation
+    setTimeout(() => {
+      cell.classList.remove('flashgreen-animation');
+    }, 1000);
+
+    // Remove gradient-animation class after the animation completes
+    setTimeout(() => {
+      cell.classList.remove('gradient-animation');
+    }, 5000);
+  }
+
+
+  //true红
+  function banCoolor(v) {
+    if (v == true) {
+      return `highlight-cell3`
+    } else {
+      return `sticky-left`
+    }
+  }
+
+  //绿正红负
+  function testcolor(v) {
+    if (v > 0) {
+      return `highlight-cell1`
+    } else if (v < 0) {
+      return `highlight-cell2`
+    } else {
+      return ``
+    }
+  }
+
+  function lsColor(str) {
+    if (str == "long") {
+      return `highlight-cell1`
+    } else if (str == "short") {
+      return `highlight-cell2`
+    } else {
+      return ``
+    }
+  }
+
+  function lsString(str) {
+    if (str == "long") {
+      return "多"
+    } else if (str == "short") {
+      return "空"
+    } else {
+      return str
+    }
+  }
+
+  function bsssString(str) {
+    if (str == "buy-short") {
+      return "平空"
+    } else if (str == "sell-short") {
+      return "做空"
+    } else {
+      return str
+    }
+  }
+
+  function safeLoanColor(v) {
+    if (v < 0.5) {
+      return `highlight-cell1`
+    } else if (v > 0.69) {
+      return `highlight-cell2`
+    } else {
+      return ``
+    }
+  }
+
+  function safeAnniversaryRateColor(v) {
+    if (v > .03) {
+      return `highlight-cell2`
+    } else {
+      return ``
+    }
+  }
+
+
+  function colorFundingRate(v) {
+    if (v > 0.001) {
+      return `highlight-cell1`
+    } else if (v < -0.001) {
+      return `highlight-cell2`
+    } else {
+      return ``
+    }
+  }
+
+  function formatTime(seconds) {
+    var hours = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds % 3600) / 60);
+    var remainingSeconds = Math.floor(seconds % 60);
+
+    var timeString = "";
+
+    if (hours > 0) {
+      timeString += hours + "小时 ";
+    }
+
+    if (hours < 1) {
+      timeString += minutes + "分钟";
+      if (minutes < 10) {
+        timeString += remainingSeconds + "秒";
+      }
+    }
+
+
+
+
+
+    return timeString.trim();
+  }
+
+
+
+
+
+
+  function constantvaule() {
+
+    const token = getAuthToken(); // Function to retrieve the authentication token
+    const url = `${API_ENDPOINT}/okrice.ConstantVaule?token=${token}`;
+    console.log(url);
+
+    const c = new WebSocket(url);
+
+    c.onopen = function () {
+      console.log('WebSocket connection established');
+    };
+
+    c.onmessage = function (msg) {
+      // console.log(msg);
+
+      $('#OKRICE_VERSION').empty();
+      const cv = JSON.parse(msg.data);
+      document.getElementById("OKRICE_VERSION").textContent = cv.OKRICE_VERSION;
+
+      console.log(cv.OKRICE_VERSION)
+
+
+    };
+
+    c.onclose = function (e) {
+      console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+      setTimeout(function () {
+        constantvaule();
+      }, 1000);
+    };
+
+    c.onerror = function (err) {
+      console.error('Socket encountered error: ', err.message, 'Closing socket');
+      c.close();
+    };
+  }
+  function getAuthToken() {
+    // Function to retrieve the authentication token (e.g., from local storage or a cookie)
+    return localStorage.getItem('authToken') || 'your-fallback-token';
+  }
+
+  //目前仓位
+  function positions() {
+
+    const token = getAuthToken(); // Function to retrieve the authentication token
+
+    // 获取当前页面的URL
+    const currentPageUrl = window.location.href;
+
+    // 使用正则表达式提取参数值
+    const match = currentPageUrl.match(/[\?&]sort=([^&]*)/);
+    const sort = match ? match[1] : null;
+
+    // console.log("sort 参数的值:", sort);
+    // console.log(sort)
+
+    // url = `wss://okrice.aib.cash/okrice.positions`
+    // url = API_ENDPOINT + "/okrice.positions?sort=opens-down"
+    url = `${API_ENDPOINT}/okrice.positions?sort=${sort}&token=${token}`;
+
+
+    c = new WebSocket(url)
+    console.log(url)
+
+
+    c.onmessage = function (msg) {
+      // console.log(msg)
+
+      $('#position').empty()
+
+      servers = $.parseJSON(msg.data)
+      const now = new Date();
+      $.each(servers, function (index, v) {
+
+        let onlyCoin = v.id.replace(/(.*?)\-USDT\-SWAP/, "$1");
+
+        const lastTradeTime = new Date(v.LastAddPositionTime);
+        // 计算时间差（以毫秒为单位）
+        const diff = now - lastTradeTime;
+        // console.log (diff);
+        // 将时间差转换为秒
+        let durationInSecondsLastAddPositionTime = diff / 1000;
+        if (durationInSecondsLastAddPositionTime > 360000) {
+          durationInSecondsLastAddPositionTime = 0
+        }
+        // if (durationInSecondsLastAddPositionTime > 3600) {
+        //   durationInSecondsLastAddPositionTime =  -1;
+        // }
+        // 转换为小时、分钟和秒
+        const hours = Math.floor(durationInSecondsLastAddPositionTime / 3600);
+        const minutes = Math.floor((durationInSecondsLastAddPositionTime % 3600) / 60);
+        const seconds = Math.floor(durationInSecondsLastAddPositionTime % 60);
+
+
+
+        document.getElementById("insurelv").textContent = (Math.round((v.MarginRatio) * 1000000) / 1000000).toFixed(0);
+
+        $('#position').append(
+          $(document.createElement('tr')).prop({
+            type: 'tr',
+            innerHTML:
+
+              `<td>` +
+              (index + 1) +
+
+              `</td><td class="` + banCoolor(v.IsBanned) + `" ><a href="https://www.okx.com/cn/trade-swap-strategy/` + v.id + `#layout=5" target=_blank >` +
+              onlyCoin +  // v.IsBanned +  banCoolor(v.IsBanned)+
+
+              `</a></td><td class="align-right ` + testcolor(v.Yeild) + `">` +
+              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%` +
+
+              `</td><td class="align-right ` + lsColor(v.Pos) + `">` +
+              lsString(v.Pos) +
+
+              `</td><td  class="align-right ` + colorFundingRate(v.FundingRate) + ` id="` + v.id + `Position-FundingRate">` +
+              (Math.round((v.FundingRate) * 1000000) / 10000).toFixed(2) + `%` +
+
+
+
+              `</td><td  id="` + v.id + `Position-OpenQuantity" >` +
+              // `$` + (Math.round((v.OpenQuantity * v.MarkPrice) * 1000000) / 1000000).toFixed(1) +
+              `$` + (Math.round((v.Insure * v.Lever) * 1000000) / 1000000).toFixed(1) +
+
+
+
+
+              `</td><td  id="` + v.id + `Position-Profit">$` +
+              (Math.round((v.Profit) * 1000000) / 1000000).toFixed(1) +
+
+              `</td><td  id="` + v.id + `Position-Insure">$` +
+              (Math.round((v.Insure) * 1000000) / 1000000).toFixed(1) +
+
+              `</td><td  id="` + v.id + `Position-MarkPrice" >` +
+              (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(10) +
+
+              `</td><td class="align-right ` + testcolor(v.FundingFee) + `">` +
+              `$` + (Math.round((v.FundingFee) * 1000000) / 10000000).toFixed(2) +
+
+              `</td><td>` +
+              formatTime(v.FundingTimeLeft) +
+
+              `</td><td  id="` + v.id + `Position-MarginRatio" >` +
+              (Math.round((v.MarginRatio) * 1000000) / 1000000).toFixed(0) + `倍` +
+
+
+
+
+              `</td><td>` +
+              v.HighestMarkPrice +
+
+              `</td><td>` +
+              (Math.round((v.AddPositionPrice) * 10000000000) / 10000000000) +
+
+
+
+              `</td><td>` +
+              v.LastAddPositionPrice +
+
+
+              `</td><td>` +    //时差
+              `${hours}小时 ${minutes}分钟 ${seconds}秒` +
+
+
+              `%</td><td>` +
+              `X` + (Math.round((v.Lever) * 1000000) / 1000000).toFixed(1) + `杠杆` +
+
+
+
+              `</td><td  class="highlight-cell">` +
+              v.FundingRate +
+
+              `</td><td>` +
+              v.id +
+
+
+
+
+
+
+              `</td>` +
+              ` `,
+          }),
+        )
+
+
+        // console.log(v.id + 'Position-MarkPrice')
+        // console.log(myMap[v.id + 'Position-MarkPrice'])
+        // console.log(v.MarkPrice)
+
+
+        if (myMap[v.id + 'Position-MarkPrice'] != v.MarkPrice) {
+          if (myMap[v.id + 'Position-MarkPrice'] > v.MarkPrice) {
+            animateRed(v.id + "Position-MarkPrice");
+          } else {
+            animateGreen(v.id + "Position-MarkPrice");
+          }
+          myMap[v.id + 'Position-MarkPrice'] = v.MarkPrice
+        }
+
+
+        if (myMap[v.id + 'Position-Profit'] != v.Profit) {
+          if (myMap[v.id + 'Position-Profit'] > v.Profit) {
+            animateRed(v.id + "Position-Profit");
+          } else {
+            animateGreen(v.id + "Position-Profit");
+          }
+          myMap[v.id + 'Position-Profit'] = v.Profit
+        }
+
+        if (myMap[v.id + 'Position-Insure'] != v.Insure) {
+          if (myMap[v.id + 'Position-Insure'] > v.Insure) {
+            animateRed(v.id + "Position-Insure");
+          } else {
+            animateGreen(v.id + "Position-Insure");
+          }
+          myMap[v.id + 'Position-Insure'] = v.Insure
+        }
+
+        if (myMap[v.id + 'Position-MarginRatio'] != v.MarginRatio) {
+          if (myMap[v.id + 'Position-MarginRatio'] > v.MarginRatio) {
+            animateRed(v.id + "Position-MarginRatio");
+          } else {
+            animateGreen(v.id + "Position-MarginRatio");
+          }
+          myMap[v.id + 'Position-MarginRatio'] = v.MarginRatio
+        }
+
+
+
+        if (myMap[v.id + 'Position-OpenQuantity'] != (v.OpenQuantity * v.MarkPrice)) {
+          if (myMap[v.id + 'Position-OpenQuantity'] > (v.OpenQuantity * v.MarkPrice)) {
+            animateRed(v.id + "Position-OpenQuantity");
+          } else {
+            animateGreen(v.id + "Position-OpenQuantity");
+          }
+          myMap[v.id + 'Position-OpenQuantity'] = (v.OpenQuantity * v.MarkPrice)
+        }
+
+        // console.log(v)
+      })
+
+
+
+    }
+
+    c.onclose = function (e) {
+      console.log(
+        'Socket is closed. Reconnect will be attempted in 1 second.',
+        e.reason,
+      )
+      setTimeout(function () {
+        positions()
+      }, 1000)
+    }
+
+    c.onerror = function (err) {
+      console.error(
+        'Socket encountered error: ',
+        err.message,
+        'Closing socket',
+      )
+      c.close()
+    }
+
+
+
+
+
+  }
+
+
+
+
+
+  positions();
+
+
+  constantvaule();
 
 </script>
 

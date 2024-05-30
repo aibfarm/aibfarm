@@ -1,7 +1,7 @@
 {{define "title"}}MyDash{{end}} {{define "content"}}
 
 <div class="container">
-  
+
   <div class="row">
     <div class="col-md-12 page-header">
       <div class="page-pretitle">Overview</div>
@@ -13,5 +13,71 @@
 
 <script>
 </script>
+
+
+<div>
+  <button id="goodLogin">Good Login</button>
+  <button id="logout">Logout</button>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+
+    $('#goodLogin').click(function () {
+      $.ajax({
+        type: "POST",
+        url: "/login",
+        data: {
+          username: "admin",
+          password: "admin"
+        },
+        success: function (data) {
+          localStorage.token = data.token;
+          localStorage.setItem('authToken', data.token);
+
+          alert('Got a token from the server! Token: ' + data.token);
+        },
+        error: function () {
+          alert("Login Failed");
+        }
+      });
+    });
+
+    $('#logout').click(function () {
+      clearCookiesAndLocalStorage();
+    });
+  });
+
+
+  function clearCookiesAndLocalStorage() {
+    // Check and clear cookies
+    console.log("Cookies before clearing:", document.cookie);
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+    console.log("Cookies after clearing:", document.cookie);
+
+    // Check and clear local storage
+    console.log("Local Storage before clearing:", localStorage);
+    localStorage.clear();
+    console.log("Local Storage after clearing:", localStorage);
+
+    // Reload the page
+    location.reload();
+  }
+
+
+</script>
+
+
+
+
 
 {{end}}
