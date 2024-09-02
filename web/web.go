@@ -101,6 +101,96 @@ func Start_WebServer() {
 				}, nil
 			}
 
+			if userID == "tjs@templexp.com" && password == "aAa33.88" {
+				return &User{
+					UserName: userID,
+					// LastName:  "Temple",
+					// FirstName: "Mika",
+				}, nil
+			}
+
+			if userID == "legend.cord@gmail.com" && password == "vBD$41" {
+				return &User{
+					UserName: userID,
+					// LastName:  "Temple",
+					// FirstName: "Mika",
+				}, nil
+			}
+
+			if userID == "trade@dongchenxie.com" && password == "aTm.230623" {
+				return &User{
+					UserName: userID,
+					// LastName:  "Temple",
+					// FirstName: "Mika",
+				}, nil
+			}
+
+			if userID == "ireneilu@live.hk" && password == "aTm.230629" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "442887516@qq.com" && password == "aTm.230630" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "tonsetisolution@gmail.com" && password == "aTm.240818" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "feiya200@gmail.com" && password == "feiya.240819" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "87619687@qq.com" && password == "jisen.240820" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "colewu9712@gmail.com" && password == "col.240820" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "Robert_anu@hotmail.com" && password == "ra.240820" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "624355527@qq.com" && password == "jc.240820" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "lining41081@gmail.com" && password == "dudu.240821" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "by.bao@hotmail.com" && password == "mika.240825" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			if userID == "xxxottochanxxx@gmail.com" && password == "zx.240829" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
 			if userID == "martin@9cat.net" && password == "temple1204." {
 				return &User{
 					UserName: userID,

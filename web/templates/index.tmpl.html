@@ -17,7 +17,11 @@
 
 <div>
   <button id="goodLogin">Good Login</button>
+
+  <button id="main">主功能</button>
+
   <button id="logout">Logout</button>
+
 </div>
 
 
@@ -46,9 +50,17 @@
       });
     });
 
+    $('#main').click(function () {
+      window.location.href = '/aibfarm.debug';
+    });
+
+
     $('#logout').click(function () {
       clearCookiesAndLocalStorage();
     });
+
+
+
   });
 
 

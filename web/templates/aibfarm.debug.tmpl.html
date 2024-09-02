@@ -157,8 +157,6 @@
       <div class="head">
         <h5 class="mb-0"> </h5>
       </div>
-
-
       <p class="text-muted">
         版本:<span id="OKRICE_VERSION"></span>
         交易:<span id="TradingON"></span>
@@ -166,80 +164,110 @@
         可用:【$<span id="AviableU"></span>】
         浮盈:【$<span id="UnPnl"></span>】
         实盈:(24小时)【$<span id="ProfitLast24Hour"></span>】
-        (7天)【$<span id="ProfitLast7Day"></span>】
+        (7天)【$<span id="ProfitLast7Day"></span>s】
         (30天)【$<span id="ProfitLast30Day"></span>】<br>
 
         保险【<span class="number" id="insurelv">0</span>倍】
+        香火钱【<span class="number" id="SettlementAIB">0</span>AIB】
       </p>
 
-
-
-
-
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
-
-
-      <table
-      id="table-position"
-      class="table  my-table table-striped">
+      <table id="table-position" class="table  my-table table-striped">
         <thead class="success">
           <tr>
             <th>ID</th>
-           
+
             <th class="sticky-left">币种</th>
             <th><a href="?sort=yield-up">↑</a>收益<a href="?sort=yield-down">↓</a></th>
             <th>势</th>
             <th>费率</th>
+            <th>价位</th>
+
+            <th style="background-color: blue;">  </th>
+
+
             <th><a href="?sort=opens-up">↑</a>持仓<a href="?sort=opens-down">↓</a></th>
             <th><a href="?sort=profit-up">↑</a>利润<a href="?sort=profit-down">↓</a></th>
             <th><a href="?sort=insure-up">↑</a>保证<a href="?sort=insure-down">↓</a></th>
-            <th>价位</th>
-            <th>扣费</th>
-            <th>资时</th>
-            <th>保险</th>
-            
-            <th>最高记录价 </th>
-            <th>移动加仓价</th>
-            <th>回加仓价位</th>
-
-
-            <th>时差</th>
-
+  
           </tr>
         </thead>
         <tbody id="position"></tbody>
       </table>
-
-
-
       <p class="text-muted">————————————————————— 加仓-潜标 【跟踪】 ————————————————————— </p>
+      <table class="table  my-table table-striped">
+        <thead class="success">
+          <tr>
+            <th>ID</th>
+            <th class="sticky-left">币种</th>
+            <th>限价</th>
+            <th>价位</th>
+            <th>保证金</th>
+            <th>金上限</th>
+            <th>收益%</th>
+            <th>亏下限</th>
+            <th>单额</th>
+            <th>尝试</th>
 
 
+          </tr>
+        </thead>
+        <tbody id="potential"></tbody>
+      </table>
 
       <p class="text-muted">————————————————————— 止盈 【跟踪】 ————————————————————— </p>
+      <table class="table  my-table table-striped">
+        <thead class="success">
+          <tr>
+            <th>ID</th>
+            <th class="sticky-left">币种</th>
+            <th>势</th>
+            <th>高盈%</th>
+            <th>移盈%</th>
+            <th>收益%</th>
+            <th>益限%</th>
+            <th>保证金</th>
+            <th>金上限</th>
+            <th>价位</th>
+            <th>利润</th>
+            <th>扣费</th>
 
 
-      <p class="text-muted">————————————————————— 平仓流水 —————————————————————
+          </tr>
+        </thead>
+        <tbody id="takeprofit"></tbody>
+      </table>
+
+
+      <p class="text-muted">————————————————————— 交易操作 (自动与手动) —————————————————————
+
+      <table class="table  my-table table-striped">
+        <thead class="success">
+          <tr>
+            <th>日期</th>
+            <th class="align-right">币种</th>
+            <th class="align-left"> 操作</th>
+            <th class="align-left">价格</th>
+            <th class="align-left">盈利</th>
+            <th class="align-left">数量</th>
+            <th class="align-left">香火AIB</th>
+          </tr>
+        </thead>
+        <tbody id="fills"></tbody>
+      </table>
 
 
       <p class="text-muted">————————————————————— 资金流水 —————————————————————
-
-
       <p class="text-muted">————————————————————— 交易动作流水 —————————————————————
-
-
-
     </div>
   </div>
 </div>
 
 
 <script>
-
-
   var myMap = {};
 
-
+  //--------- Common  ------------
 
   function animateCell(cellname) {
     // const cell = document.getElementById('cell');
@@ -425,11 +453,14 @@
     return timeString.trim();
   }
 
+  function getAuthToken() {
+    // Function to retrieve the authentication token (e.g., from local storage or a cookie)
+    return localStorage.getItem('authToken') || 'your-fallback-token';
+  }
 
+  //!------------------------ Funcs -----------------------------
 
-
-
-
+  //!-常值
   function constantvaule() {
 
     const token = getAuthToken(); // Function to retrieve the authentication token
@@ -448,6 +479,16 @@
       $('#OKRICE_VERSION').empty();
       const cv = JSON.parse(msg.data);
       document.getElementById("OKRICE_VERSION").textContent = cv.OKRICE_VERSION;
+      document.getElementById("TradingON").textContent = cv.TradingON;
+
+      document.getElementById("AviableU").textContent = (Math.round((cv.AviableU) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("UnPnl").textContent = (Math.round((cv.UnPnl) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("ProfitLast24Hour").textContent = (Math.round((cv.ProfitLast24Hour) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("ProfitLast7Day").textContent = (Math.round((cv.ProfitLast7Day) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("ProfitLast30Day").textContent = (Math.round((cv.ProfitLast30Day) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("SettlementAIB").textContent = (Math.round((cv.SettlementAIB) * 1000000) / 1000000).toFixed(2);
+
+
 
       console.log(cv.OKRICE_VERSION)
 
@@ -466,12 +507,8 @@
       c.close();
     };
   }
-  function getAuthToken() {
-    // Function to retrieve the authentication token (e.g., from local storage or a cookie)
-    return localStorage.getItem('authToken') || 'your-fallback-token';
-  }
 
-  //目前仓位
+  //!-目前仓位
   function positions() {
 
     const token = getAuthToken(); // Function to retrieve the authentication token
@@ -492,7 +529,7 @@
 
 
     c = new WebSocket(url)
-    console.log(url)
+    // console.log(url)
 
 
     c.onmessage = function (msg) {
@@ -548,12 +585,17 @@
               (Math.round((v.FundingRate) * 1000000) / 10000).toFixed(2) + `%` +
 
 
+              `</td><td  id="` + v.id + `Position-MarkPrice" >` +
+              (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(10) +
 
+
+              `</td><td style="background-color: blue;">` +
+             
+
+              //！------------- don't wanna share follwoing
               `</td><td  id="` + v.id + `Position-OpenQuantity" >` +
               // `$` + (Math.round((v.OpenQuantity * v.MarkPrice) * 1000000) / 1000000).toFixed(1) +
               `$` + (Math.round((v.Insure * v.Lever) * 1000000) / 1000000).toFixed(1) +
-
-
 
 
               `</td><td  id="` + v.id + `Position-Profit">$` +
@@ -562,53 +604,9 @@
               `</td><td  id="` + v.id + `Position-Insure">$` +
               (Math.round((v.Insure) * 1000000) / 1000000).toFixed(1) +
 
-              `</td><td  id="` + v.id + `Position-MarkPrice" >` +
-              (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(10) +
-
-              `</td><td class="align-right ` + testcolor(v.FundingFee) + `">` +
-              `$` + (Math.round((v.FundingFee) * 1000000) / 10000000).toFixed(2) +
-
-              `</td><td>` +
-              formatTime(v.FundingTimeLeft) +
-
-              `</td><td  id="` + v.id + `Position-MarginRatio" >` +
-              (Math.round((v.MarginRatio) * 1000000) / 1000000).toFixed(0) + `倍` +
 
 
-
-
-              `</td><td>` +
-              v.HighestMarkPrice +
-
-              `</td><td>` +
-              (Math.round((v.AddPositionPrice) * 10000000000) / 10000000000) +
-
-
-
-              `</td><td>` +
-              v.LastAddPositionPrice +
-
-
-              `</td><td>` +    //时差
-              `${hours}小时 ${minutes}分钟 ${seconds}秒` +
-
-
-              `%</td><td>` +
-              `X` + (Math.round((v.Lever) * 1000000) / 1000000).toFixed(1) + `杠杆` +
-
-
-
-              `</td><td  class="highlight-cell">` +
-              v.FundingRate +
-
-              `</td><td>` +
-              v.id +
-
-
-
-
-
-
+          
               `</td>` +
               ` `,
           }),
@@ -639,23 +637,8 @@
           myMap[v.id + 'Position-Profit'] = v.Profit
         }
 
-        if (myMap[v.id + 'Position-Insure'] != v.Insure) {
-          if (myMap[v.id + 'Position-Insure'] > v.Insure) {
-            animateRed(v.id + "Position-Insure");
-          } else {
-            animateGreen(v.id + "Position-Insure");
-          }
-          myMap[v.id + 'Position-Insure'] = v.Insure
-        }
 
-        if (myMap[v.id + 'Position-MarginRatio'] != v.MarginRatio) {
-          if (myMap[v.id + 'Position-MarginRatio'] > v.MarginRatio) {
-            animateRed(v.id + "Position-MarginRatio");
-          } else {
-            animateGreen(v.id + "Position-MarginRatio");
-          }
-          myMap[v.id + 'Position-MarginRatio'] = v.MarginRatio
-        }
+
 
 
 
@@ -700,14 +683,360 @@
 
   }
 
+  //!-潜在加仓
+  function potential() {
+    const token = getAuthToken(); // Function to retrieve the authentication token
+    url = `${API_ENDPOINT}/okrice.potentials?token=${token}`;
+    c = new WebSocket(url)
+    // console.log(url)
+
+    c.onmessage = function (msg) {
+      // console.log(msg)
+
+      $('#potential').empty()
+
+      const now = new Date();
+
+      servers = $.parseJSON(msg.data)
+
+      $.each(servers, function (index, v) {
+
+        let ratio = 100 * (v.MarkPrice - v.AddPositionPrice) / v.MarkPrice
+        let onlyCoin = v.id.replace(/(.*?)\-USDT\-SWAP/, "$1");
+
+
+        const lastTradeTime = new Date(v.LastAddPositionTime);
+        // 计算时间差（以毫秒为单位）
+        const diff = now - lastTradeTime;
+        // console.log (diff);
+        // 将时间差转换为秒
+        let durationInSecondsLastAddPositionTime = diff / 1000;
+        if (durationInSecondsLastAddPositionTime > 360000) {
+          durationInSecondsLastAddPositionTime = 0
+        }
+        // if (durationInSecondsLastAddPositionTime > 3600) {
+        //   durationInSecondsLastAddPositionTime =  -1;
+        // }
+        // 转换为小时、分钟和秒
+        const hours = Math.floor(durationInSecondsLastAddPositionTime / 3600);
+        const minutes = Math.floor((durationInSecondsLastAddPositionTime % 3600) / 60);
+        const seconds = Math.floor(durationInSecondsLastAddPositionTime % 60);
+
+        $('#potential').append(
+
+          $(document.createElement('tr')).prop({
+            type: 'tr',
+            innerHTML:
+              `<td>` +
+              (index + 1) +
+              `</td><td class="` + banCoolor(v.IsBanned) + `" ><a href="https://www.okx.com/cn/trade-swap-strategy/` + v.id + `#layout=5" target=_blank>` +
+              onlyCoin +
+
+ 
+
+ 
+              `</td><td  id="` + v.id + `Potential-AddPositionPrice"  class="align-right ` + testcolor(v.AddPositionPrice - v.MarkPrice) + `">` +
+              // (Math.round((v.AddPositionPrice) * 1000000000000) / 1000000000000).toFixed(12) +
+              //  v.AddPositionPrice +
+              (Math.round((v.AddPositionPrice) * 1000000000000) / 1000000000000) +
+
+
+              `</td><td  id="` + v.id + `Potential-MarkPrice" class="align-right ` + testcolor(v.AddPositionPrice - v.MarkPrice) + `" >` +
+              // (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(12) +
+              v.MarkPrice +
+
+
+              `</td><td class="align-right ` + testcolor(v.InsureLV - v.Insure) + `">` +
+              (Math.round((v.Insure) * 1000000) / 1000000).toFixed(1) +
+
+              `</td><td class="align-right ` + testcolor(v.InsureLV - v.Insure) + `">` +
+              (Math.round((v.InsureLV) * 1000000) / 1000000).toFixed(1) +
+
+
+              `</td><td class="align-right ` + testcolor(v.YieldLossLV - v.Yeild) + `">` +
+              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%` +
+
+              `</td><td class="align-right ` + testcolor(v.YieldLossLV - v.Yeild) + `">` +
+              (Math.round((v.YieldLossLV) * 1000000) / 1000000).toFixed(1) + `%` +
+
+              `</td><td  id="` + v.id + `Potential-PositionFundAmount" >` +
+              // (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(12) +
+              v.PositionFundAmount +
+
+              `</td><td>` +
+              v.AttempCounter +
+
+               `</td>` +
+              ` `,
+          }),
+        )
+        if (myMap[v.id + 'Potential-MarkPrice'] != v.MarkPrice) {
+          // console.log(v.id + 'Potential-MarkPrice')
+          // console.log(myMap[v.id + 'Potential-MarkPrice'])
+          // console.log(v.MarkPrice)
+          if (myMap[v.id + 'Potential-MarkPrice'] > v.MarkPrice) {
+            animateRed(v.id + "Potential-MarkPrice");
+          } else {
+            animateGreen(v.id + "Potential-MarkPrice");
+          }
+          myMap[v.id + 'Potential-MarkPrice'] = v.MarkPrice
+        }
+        if (myMap[v.id + 'Potential-MarkAddDiffPrice'] != ratio) {
+          if (myMap[v.id + 'Potential-MarkAddDiffPrice'] > ratio) {
+            animateRed(v.id + "Potential-MarkAddDiffPrice");
+          } else {
+            animateGreen(v.id + "Potential-MarkAddDiffPrice");
+          }
+          myMap[v.id + 'Potential-MarkAddDiffPrice'] = ratio
+        }
+        if (myMap[v.id + 'Potential-AddPositionPrice'] != v.AddPositionPrice) {
+          if (myMap[v.id + 'Potential-AddPositionPrice'] > v.AddPositionPrice) {
+            animateRed(v.id + "Potential-AddPositionPrice");
+          } else {
+            animateGreen(v.id + "Potential-AddPositionPrice");
+          }
+          myMap[v.id + 'Potential-AddPositionPrice'] = v.AddPositionPrice
+        }
+      })
+    }
+
+    c.onclose = function (e) {
+      console.log(
+        'potential: Socket is closed. Reconnect will be attempted in 1 second.',
+        e.reason,
+      )
+      setTimeout(function () {
+        potential()
+      }, 1000)
+    }
+
+    c.onerror = function (err) {
+      console.error(
+        'Socket encountered error: ',
+        err.message,
+        'Closing socket',
+      )
+      c.close()
+    }
+  }
+
+  //!-交易动作(自动或手动)
+  function fills() {
+    // url = 'wss://okrice.aib.cash/okrice.fills'
+    // url = API_ENDPOINT + "/okrice.fills"
+
+    const token = getAuthToken(); // Function to retrieve the authentication token
+    url = `${API_ENDPOINT}/okrice.fills?token=${token}`;
+
+
+    c = new WebSocket(url)
+    c.onmessage = function (msg) {
+      // console.log(msg)
+
+      $('#fills').empty()
+
+      servers = $.parseJSON(msg.data)
+
+      $.each(servers, function (index, v) {
+
+        const date = new Date(v.ts * 1.0);
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var hour = date.getHours();
+        var minute = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        let onlyCoin = v.instId.replace(/(.*?)\-USDT\-SWAP/, "$1");
+
+
+        $('#fills').append(
+          $(document.createElement('tr')).prop({
+            type: 'tr',
+            innerHTML:
+              `<td>` +
+              month + `月` + day + `日 ` + hour + `:` + minute + `:` + seconds +
+
+              // `</td><td class="align-right">` +
+              //   onlyCoin+//              v.instId +
+              `</td><td class="sticky-left"><a href="https://www.okx.com/cn/balance/report-center/unified/account-historybuy-short	">` +
+              onlyCoin +
+
+              `</td><td>` +
+              bsssString(v.side + `-` + v.posSide) + //              v.side + `-` + v.posSide +
+
+              `</td><td>$` +
+              (Math.round((v.fillPx) * 100000000) / 100000000).toFixed(8) +
+
+              `</td><td>$` +
+              (Math.round((v.fillPnl) * 100000000) / 100000000).toFixed(2) +
+
+              `</td><td>` +
+              (Math.round((v.fillSz) * 100000000) / 100000000).toFixed(0) + `张` +
+
+              `</td><td>α` +
+              // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
+              (-0.6+Math.round((v.fillPnl) * -100000000) / 10000000).toFixed(0)  +
+
+              // `</td><td>` +
+              // v.execType +
+
+              `</td>` +
+              ` `,
+          }),
+        )
+
+        // console.log(v)
+      })
+    }
+
+    c.onclose = function (e) {
+      console.log(
+        'Socket is closed. Reconnect will be attempted in 1 second.',
+        e.reason,
+      )
+      setTimeout(function () {
+        fills()
+      }, 1000)
+    }
+
+    c.onerror = function (err) {
+      console.error(
+        'Socket encountered error: ',
+        err.message,
+        'Closing socket',
+      )
+      c.close()
+    }
+  }
+
+
+  function takeprofit() {
+    
+    const token = getAuthToken(); // Function to retrieve the authentication token
+    url = `${API_ENDPOINT}/okrice.takeprofit?token=${token}`;
+    c = new WebSocket(url)
+
+    c.onmessage = function (msg) {
+      // console.log(msg)
+
+      $('#takeprofit').empty()
+
+      servers = $.parseJSON(msg.data)
+
+      $.each(servers, function (index, v) {
+
+        // let ratio = 100 * (v.MarkPrice - v.AddPositionPrice) / v.MarkPrice
+        let onlyCoin = v.id.replace(/(.*?)\-USDT\-SWAP/, "$1");
+
+
+        $('#takeprofit').append(
+
+          $(document.createElement('tr')).prop({
+            type: 'tr',
+            innerHTML:
+              `<td>` +
+              (index + 1) +
+              `</td><td class="sticky-left"><a href="https://www.okx.com/cn/trade-swap-strategy/` + v.id + `#layout=5">` +
+              onlyCoin +
+
+              `</td><td class="align-right ` + lsColor(v.Pos) + `">` +
+              lsString(v.Pos) +
+
+              `</td><td  id="` + v.id + `Takeprofit-HighestYeild" class="align-right ` + testcolor(v.Yeild - v.TakeProfitYeild) + `" >` +
+              (Math.round((v.HighestYeild) * 1000000) / 1000000).toFixed(1) + `%` +
+
+
+              `</td><td  id="` + v.id + `Takeprofit-TakeProfitYeild" class="align-right ` + testcolor(v.Yeild - v.TakeProfitYeild) + `" >` +
+              (Math.round((v.TakeProfitYeild) * 1000000) / 1000000).toFixed(1) + `%` +
+
+
+              `</td><td  id="` + v.id + `Takeprofit-Yeild" class="align-right ` + testcolor(v.Yeild - v.YieldGainLV) + `" >` +
+              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%` +
+
+
+              `</td><td  id="` + v.id + `Takeprofit-YeildThreshold" class="align-right ` + testcolor(v.Yeild - v.YieldGainLV) + `" >` +
+              (Math.round((v.YieldGainLV) * 1000000) / 1000000).toFixed(1) + `%` +
+
+
+              `</td><td class="align-right ` + testcolor(v.Insure - v.InsureLV) + `">` +
+              (Math.round((v.Insure) * 1000000) / 1000000).toFixed(1) +
+
+              `</td><td class="align-right ` + testcolor(v.Insure - v.InsureLV) + `">` +
+              (Math.round((v.InsureLV) * 1000000) / 1000000).toFixed(1) +
+
+
+              `</td><td  id="` + v.id + `Takeprofit-MarkPrice" class="align-right">` +
+              v.MarkPrice +
+
+              `</td><td  id="` + v.id + `Takeprofit-Profit" class="align-right">` +
+              (Math.round((v.Profit) * 1000000) / 1000000).toFixed(1) +
+
+
+              `</td><td class="align-right ` + testcolor(v.FundingFee) + `">` +
+              `$` + (Math.round((v.FundingFee) * 1000000) / 1000000).toFixed(2) +
+
+              `</td>` +
+              ` `,
+          }),
+        )
+
+        if (myMap[v.id + 'Takeprofit-MarkPrice'] != v.MarkPrice) {
+          // console.log(v.id + 'Potential-MarkPrice')
+          // console.log(myMap[v.id + 'Potential-MarkPrice'])
+          // console.log(v.MarkPrice)
+          if (myMap[v.id + 'Takeprofit-MarkPrice'] > v.MarkPrice) {
+            animateRed(v.id + "Takeprofit-MarkPrice");
+          } else {
+            animateGreen(v.id + "Takeprofit-MarkPrice");
+          }
+          myMap[v.id + 'Takeprofit-MarkPrice'] = v.MarkPrice
+        }
+
+        if (myMap[v.id + 'Takeprofit-Profit'] != v.MarkPrice) {
+          // console.log(v.id + 'Potential-MarkPrice')
+          // console.log(myMap[v.id + 'Potential-MarkPrice'])
+          // console.log(v.MarkPrice)
+          if (myMap[v.id + 'Takeprofit-Profit'] > v.MarkPrice) {
+            animateRed(v.id + "Takeprofit-Profit");
+          } else {
+            animateGreen(v.id + "Takeprofit-Profit");
+          }
+          myMap[v.id + 'Takeprofit-Profit'] = v.MarkPrice
+        }
 
 
 
+      })
+    }
 
-  positions();
+    c.onclose = function (e) {
+      console.log(
+        'Takeprofit: Socket is closed. Reconnect will be attempted in 1 second.',
+        e.reason,
+      )
+      setTimeout(function () {
+        takeprofit()
+      }, 1000)
+    }
+
+    c.onerror = function (err) {
+      console.error(
+        'Socket encountered error: ',
+        err.message,
+        'Closing socket',
+      )
+      c.close()
+    }
+  }
 
 
-  constantvaule();
+
+  takeprofit()
+  fills()
+  potential();
+  positions(); //目前仓位
+  constantvaule();//常值
 
 </script>
 

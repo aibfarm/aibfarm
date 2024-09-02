@@ -28,7 +28,8 @@ func main() {
 
 	ip := "local"
 
-	config.AIBFarmConfig.API_ENDPOINT = "ws://192.168.2.138:21779" //TODO
+	// config.AIBFarmConfig.API_ENDPOINT = "ws://192.168.2.138:21779" //TODO
+	config.AIBFarmConfig.API_ENDPOINT = "wss://farm-api.8tc.ca" //TODO
 
 	welcome := fmt.Sprintf("AIB FARM [%s] ", ip)
 	log.Printf("\x1b[31;1m  START: %s  \x1b[0m \n", welcome)
