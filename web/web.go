@@ -191,6 +191,15 @@ func Start_WebServer() {
 				}, nil
 			}
 
+                        if userID == "richard.zhang.9cat@gmail.com" && password == "richard.240903" {
+                                return &User{
+                                        UserName: userID,
+                                }, nil
+                        }
+
+
+
+
 			if userID == "martin@9cat.net" && password == "temple1204." {
 				return &User{
 					UserName: userID,
