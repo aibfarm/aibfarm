@@ -7,6 +7,7 @@ package config
 const AIBFARM_VERSION = "0.0.1"
 const AIBFARM_CONFIG = "config.aibfarm.yaml"
 const AIBFARM_DASH_PORT = ":21881"
+const AIBFARM_DASH_PORT2 = ":21882"
 
 // !-- 全局配置
 var AIBFarmConfig Config

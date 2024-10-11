@@ -55,8 +55,8 @@ func Start_WebServer() {
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "temple zone",
 		Key:         []byte("secret key should stay in the config file"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
+		Timeout:     24 * time.Hour,
+		MaxRefresh:  24 * time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*User); ok {
@@ -191,14 +191,23 @@ func Start_WebServer() {
 				}, nil
 			}
 
-                        if userID == "richard.zhang.9cat@gmail.com" && password == "richard.240903" {
-                                return &User{
-                                        UserName: userID,
-                                }, nil
-                        }
+			if userID == "richard.zhang.9cat@gmail.com" && password == "richard.240903" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
 
+			if userID == "lemoine5332@gmail.com" && password == "lou.2409a20" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
 
-
+			if userID == "cnimaiv@gmail.com" && password == "js.20240923" {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
 
 			if userID == "martin@9cat.net" && password == "temple1204." {
 				return &User{
