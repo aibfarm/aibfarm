@@ -16,11 +16,11 @@
 
 
 <div>
-  <button id="goodLogin">Good Login</button>
+  <!-- <button id="goodLogin">Good Login</button> -->
 
   <button id="main">主功能</button>
 
-  <button id="logout">Logout</button>
+  <button id="logout">退出</button>
 
 </div>
 
@@ -30,25 +30,25 @@
 <script type="text/javascript">
   $(document).ready(function () {
 
-    $('#goodLogin').click(function () {
-      $.ajax({
-        type: "POST",
-        url: "/login",
-        data: {
-          username: "admin",
-          password: "admin"
-        },
-        success: function (data) {
-          localStorage.token = data.token;
-          localStorage.setItem('authToken', data.token);
+    // $('#goodLogin').click(function () {
+    //   $.ajax({
+    //     type: "POST",
+    //     url: "/login",
+    //     data: {
+    //       username: "admin",
+    //       password: "admin"
+    //     },
+    //     success: function (data) {
+    //       localStorage.token = data.token;
+    //       localStorage.setItem('authToken', data.token);
 
-          alert('Got a token from the server! Token: ' + data.token);
-        },
-        error: function () {
-          alert("Login Failed");
-        }
-      });
-    });
+    //       alert('Got a token from the server! Token: ' + data.token);
+    //     },
+    //     error: function () {
+    //       alert("Login Failed");
+    //     }
+    //   });
+    // });
 
     $('#main').click(function () {
       window.location.href = '/aibfarm.debug';

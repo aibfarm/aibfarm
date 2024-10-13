@@ -3,6 +3,11 @@
 <script>
   var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
   console.log(API_ENDPOINT)
+
+
+
+
+
 </script>
 
 <style>
@@ -164,11 +169,13 @@
         可用:【$<span id="AviableU"></span>】
         浮盈:【$<span id="UnPnl"></span>】
         实盈:(24小时)【$<span id="ProfitLast24Hour"></span>】
-        (7天)【$<span id="ProfitLast7Day"></span>s】
+        (7天)【$<span id="ProfitLast7Day"></span>】
         (30天)【$<span id="ProfitLast30Day"></span>】<br>
 
         保险【<span class="number" id="insurelv">0</span>倍】
         香火钱【<span class="number" id="SettlementAIB">0</span>AIB】
+        师傅【<span class="number" id="masterName">无</span>】
+        孝敬【<span class="number" id="masterRate">0</span>%】
       </p>
 
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
@@ -488,6 +495,9 @@
       document.getElementById("ProfitLast7Day").textContent = (Math.round((cv.ProfitLast7Day) * 1000000) / 1000000).toFixed(2);
       document.getElementById("ProfitLast30Day").textContent = (Math.round((cv.ProfitLast30Day) * 1000000) / 1000000).toFixed(2);
       document.getElementById("SettlementAIB").textContent = (Math.round((cv.SettlementAIB) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("masterName").textContent = cv.MasterName;
+      document.getElementById("masterRate").textContent = (Math.round((cv.MasterRate) * 1000000) / 1000000).toFixed(2);
+      document.getElementById("name_of_user").textContent = cv.Nickname;;
 
 
 
@@ -1040,7 +1050,13 @@
   positions(); //目前仓位
   constantvaule();//常值
 
+
+
+
 </script>
+
+
+
 
 {{end}}
 </div>
