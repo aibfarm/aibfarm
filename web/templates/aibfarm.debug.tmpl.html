@@ -163,6 +163,7 @@
         <h5 class="mb-0"> </h5>
       </div>
       <p class="text-muted">
+        我的ID:【 <span class="number" id="masterID" onclick="copyToClipboard()"></span>】
         版本:<span id="OKRICE_VERSION"></span>
         交易:<span id="TradingON"></span>
 
@@ -175,6 +176,7 @@
         保险【<span class="number" id="insurelv">0</span>倍】
         香火钱【<span class="number" id="SettlementAIB">0</span>AIB】
         师傅【<span class="number" id="masterName">无</span>】
+        
         孝敬【<span class="number" id="masterRate">0</span>%】
       </p>
 
@@ -257,8 +259,9 @@
             <th class="align-left">价格</th>
             <th class="align-left">盈利</th>
             <th class="align-left">数量</th>
-            <th class="align-left">香火</th>
-            <th class="align-left">师傅</th>
+            <!-- <th class="align-left">香火</th>
+            <th class="align-left">师傅</th> -->
+
           </tr>
         </thead>
         <tbody id="fills"></tbody>
@@ -461,6 +464,30 @@
     return timeString.trim();
   }
 
+
+  function copyToClipboard() {
+    // 获取 span 中的内容
+    const masterID = document.getElementById("masterID").textContent;
+
+    // 拼接成完整的 URL
+    const url = `https://aibfarm.com/master.html?${masterID}`;
+
+    // 创建一个临时的输入框来复制内容
+    const tempInput = document.createElement("input");
+    document.body.appendChild(tempInput);
+    tempInput.value = url;
+    tempInput.select();
+
+    // 执行复制命令
+    document.execCommand("copy");
+
+    // 删除临时输入框
+    document.body.removeChild(tempInput);
+
+    // 提示用户已经复制
+    alert("已复制到剪贴板: " + url);
+  }
+
   function getAuthToken() {
     // Function to retrieve the authentication token (e.g., from local storage or a cookie)
     return localStorage.getItem('authToken') || 'your-fallback-token';
@@ -498,6 +525,7 @@
       document.getElementById("masterName").textContent = cv.MasterName;
       document.getElementById("masterRate").textContent = (Math.round((cv.MasterRate) * 1000000) / 1000000).toFixed(2);
       document.getElementById("name_of_user").textContent = cv.Nickname;;
+      document.getElementById("masterID").textContent = cv.MasterID;
 
 
 
@@ -885,13 +913,13 @@
               `</td><td>` +
               (Math.round((v.fillSz) * 100000000) / 100000000).toFixed(0) + `张` +
 
-              `</td><td>α` +
-              // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
-              (-0.6 + Math.round((v.fillPnl) * -100000000) / 10000000).toFixed(0) +
+              // `</td><td>α` +
+              // // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
+              // (-0.6 + Math.round((v.fillPnl) * -100000000) / 10000000).toFixed(0) +
 
-              `</td><td>α` +
-              // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
-              (0).toFixed(0) +
+              // `</td><td>α` +
+              // // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
+              // (0).toFixed(0) +
 
               `</td>` +
               ` `,
