@@ -4,6 +4,10 @@
   var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
   console.log(API_ENDPOINT)
 
+
+
+
+
 </script>
 
 <style>
@@ -228,9 +232,9 @@
       </p>
       V5版本 <label class="version-switch">
         <input type="checkbox" id="v5Toggle">
-        <span class="version-slider"></span>
-      </label> 启用
-      <span id="versionStatus"></span> （需要保持AIB>5000）
+        <span class="version-slider"></span>      
+      </label>  启用
+      <span id="versionStatus"></span>
 
 
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
@@ -669,23 +673,7 @@
               onlyCoin +  // v.IsBanned +  banCoolor(v.IsBanned)+
 
               `</a></td><td class="align-right ` + testcolor(v.Yeild) + `">` +
-              `<a href="https://aibfarm.com/referral.html?pnl=` +
-              ((Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1)) +
-              `&open=` +
-              (Math.round((v.MarkPrice / (1 - (v.Yeild / (100 * v.Lever)))) * 10000000000) / 10000000000).toFixed(10) +
-              `&now=` +
-              (Math.round((v.MarkPrice) * 10000000000) / 10000000000).toFixed(10) +
-              `&instid=` +
-              v.id +
-              `&coin=` +
-              "bitcooin" +
-              `&pos=` +
-              v.Pos +
-              `&client=` +
-              v.Name +
-              `" target=_blank > ` +
-              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%</a>` +
-
+              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%` +
 
               `</td><td class="align-right ` + lsColor(v.Pos) + `">` +
               lsString(v.Pos) +
@@ -1149,49 +1137,11 @@
   constantvaule();//常值
 
 
+
+
 </script>
 
 
-
-<script>
-  // 在原有代码最后添加这部分
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggle = document.getElementById('v5Toggle');
-    const statusEl = document.getElementById('versionStatus');
-
-    // 初始化状态
-    fetch(`https://farm-api.aibfarm.com/okfarm.v5.state?token=${getAuthToken()}`)
-      .then(res => res.json())
-      .then(data => {
-        toggle.checked = data.enabled;
-        statusEl.textContent = data.enabled ? 'ON' : 'OFF';
-      });
-
-    // 切换处理
-    toggle.addEventListener('change', function () {
-      const newState = this.checked;
-      statusEl.textContent = '...';
-
-      fetch(`https://farm-api.aibfarm.com/okfarm.v5.state?token=${getAuthToken()}&enable=${newState}`)
-        .then(res => {
-          if (!res.ok) throw new Error('请求失败');
-          return res.json();
-        })
-        .then(data => {
-          statusEl.textContent = data.enabled ? 'ON' : 'OFF';
-          if (data.enabled !== newState) {
-            toggle.checked = data.enabled; // 同步服务端实际状态
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          toggle.checked = !newState; // 回滚状态
-          statusEl.textContent = toggle.checked ? 'ON' : 'OFF';
-          alert('操作失败，请查看控制台');
-        });
-    });
-  });
-</script>
 
 
 {{end}}
