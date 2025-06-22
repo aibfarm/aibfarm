@@ -231,6 +231,12 @@
         <span class="version-slider"></span>
       </label> 启用
       <span id="versionStatus"></span> （需要保持AIB>5000）
+      <br>
+      V5.1 测试版本 <label class="version-switch">
+        <input type="checkbox" id="v5.1Toggle">
+        <span class="version-slider"></span>
+      </label> 启用
+      <span id="versionStatus51"></span> （V5.1 充分利用闲置资金作简单年化5%左右， 包括V5目前功能，测试阶段，保持AIB>100）
 
 
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
@@ -1191,6 +1197,50 @@
         });
     });
   });
+
+
+  // V5.1 Toggle - CORRECTED LOGIC
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('v5.1Toggle');
+    const statusEl = document.getElementById('versionStatus51');
+
+    // Initialization (This part is fine)
+    fetch(`https://farm-api.aibfarm.com/okfarm.v5.1.state?token=${getAuthToken()}`)
+      .then(res => res.json())
+      .then(data => {
+        toggle.checked = data.enabled;
+        statusEl.textContent = data.enabled ? 'ON' : 'OFF';
+      });
+
+    // Toggle handler
+    toggle.addEventListener('change', function () {
+      const newState = this.checked;
+      statusEl.textContent = '...';
+
+      fetch(`https://farm-api.aibfarm.com/okfarm.v5.1.state?token=${getAuthToken()}&enable=${newState}`)
+        .then(res => {
+          // If the server responds with an error status (like 404 or 500), throw an error to trigger the .catch block.
+          if (!res.ok) {
+            throw new Error('Request failed with status ' + res.status);
+          }
+          // If the response is ok (e.g., status 200), we don't need to parse the body.
+          // We can assume the operation was successful.
+          // We update the UI based on the state we intended to set.
+          statusEl.textContent = newState ? 'ON' : 'OFF';
+          toggle.checked = newState;
+        })
+        .catch(err => {
+          // This block will now only run if the network request itself fails or the server returns an error status.
+          console.error('Operation failed:', err);
+
+          // Rollback the UI to the previous state.
+          toggle.checked = !newState;
+          statusEl.textContent = toggle.checked ? 'ON' : 'OFF';
+          alert('Operation failed, please check the console.');
+        });
+    });
+  });
+
 </script>
 
 
