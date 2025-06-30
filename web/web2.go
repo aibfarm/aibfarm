@@ -21,10 +21,22 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 )
 
+var StatusMsg *config.ClientData
+
 // !-- mydash 的web 服务器 v2
 func WebServerV2() {
 	// var str string
 	var err error
+
+	//!-700 汇报系统
+	StatusMsg = &config.ClientData{
+		Name:  "AIBFARM 客服UI接口",
+		Ports: fmt.Sprintf("%s", config.AIBFARM_DASH_PORT2),
+		DBs:   "N/A",
+
+		Message: "AIBFARM 客服UI接口 - web.WebServerV2() ",
+	}
+	_, err = config.ReportStatusJSON(StatusMsg) // _statStop
 
 	r := gin.Default()
 	// r.Use(cors.Default())
