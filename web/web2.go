@@ -70,6 +70,8 @@ func WebServerV2() {
 				// FirstName: "Mika", //这里是验证返回的名字
 			}
 		},
+
+		/* non-exist user issue
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var loginVals login
 			if err := c.ShouldBind(&loginVals); err != nil {
@@ -97,6 +99,39 @@ func WebServerV2() {
 			}
 
 			AIBFarm_Web_VerifyUser(&u)
+			if u.IsMatch {
+				return &User{
+					UserName: userID,
+				}, nil
+			}
+
+			return nil, jwt.ErrFailedAuthentication
+		},*/
+
+		Authenticator: func(c *gin.Context) (interface{}, error) {
+			var loginVals login
+			if err := c.ShouldBind(&loginVals); err != nil {
+				return "", jwt.ErrMissingLoginValues
+			}
+			userID := loginVals.Username
+			password := loginVals.Password
+
+			log.Printf("%s:%s", loginVals.Username, loginVals.Password)
+
+			u := VerifyUser{
+				Username: userID,
+				Password: password,
+			}
+
+			// ADD ERROR CHECK HERE
+			err := AIBFarm_Web_VerifyUser(&u)
+			log.Printf("VerifyUser result - IsMatch: %v, Error: %v", u.IsMatch, err)
+
+			if err != nil {
+				log.Printf("VerifyUser error: %v", err)
+				return nil, jwt.ErrFailedAuthentication
+			}
+
 			if u.IsMatch {
 				return &User{
 					UserName: userID,
@@ -179,6 +214,14 @@ func WebServerV2() {
 			})
 		})
 
+		//!-------OKRice Debuging / Monitoring
+		authorized.GET("/aibfarm.hype", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "aibfarm.hype.tmpl.html", gin.H{
+				"menulist":     factory.MakeMenu(),
+				"api_endpoint": config.AIBFarmConfig.API_ENDPOINT, //"ws://192.168.2.131:20889",
+			})
+		})
+
 		//!--END OF 验证之后的操作：
 
 	}
@@ -208,17 +251,73 @@ type VerifyUser_Response struct {
 	Code int
 }
 
+// func AIBFarm_Web_VerifyUser(user *VerifyUser) error {
+// 	var str string
+// 	var err error
+
+// 	str = fmt.Sprintf("AIBFarm Web Verify User \n err:: %s", err)
+// 	log.Print(str)
+
+// 	// app := VerifyUser{
+// 	// 	Username: "tanjiashun@templexp.com",
+// 	// 	Password: "asdfAsdf..12",
+// 	// }
+
+// 	jsonStr, err := json.Marshal(user)
+// 	if err != nil {
+// 		log.Print(err)
+// 		return err
+// 	}
+
+// 	req, err := http.NewRequest(
+// 		"POST",
+// 		"https://new.aibfarm.com/aibfarm.web.VerifyUser",
+// 		bytes.NewBuffer(jsonStr),
+// 	)
+
+// 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36")
+// 	req.Header.Set("X-Custom-Header", "myvalue")
+// 	req.Header.Set("Content-Type", "application/json")
+// 	req.SetBasicAuth("temple", "xXxxxXxx.xXx")
+
+// 	client := &http.Client{}
+
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		log.Print(err)
+// 		return err
+// 	}
+// 	defer resp.Body.Close()
+
+// 	// fmt.Println("response Status:", resp.Status)
+// 	// fmt.Println("response Headers:", resp.Header)
+
+// 	// body, _ := io.ReadAll(resp.Body)
+// 	// fmt.Println("response Body:", string(body))
+
+// 	r := VerifyUser_Response{}
+// 	user.IsMatch = false
+// 	err = json.NewDecoder(resp.Body).Decode(&r)
+// 	if err != nil {
+// 		log.Print(err)
+// 		return err
+// 	}
+
+// 	if r.Code == 0 {
+// 		user.IsMatch = true
+// 	} else {
+// 		pp.Print(r)
+// 	}
+
+// 	return err
+// }
+
 func AIBFarm_Web_VerifyUser(user *VerifyUser) error {
 	var str string
 	var err error
 
 	str = fmt.Sprintf("AIBFarm Web Verify User \n err:: %s", err)
 	log.Print(str)
-
-	// app := VerifyUser{
-	// 	Username: "tanjiashun@templexp.com",
-	// 	Password: "asdfAsdf..12",
-	// }
 
 	jsonStr, err := json.Marshal(user)
 	if err != nil {
@@ -246,12 +345,6 @@ func AIBFarm_Web_VerifyUser(user *VerifyUser) error {
 	}
 	defer resp.Body.Close()
 
-	// fmt.Println("response Status:", resp.Status)
-	// fmt.Println("response Headers:", resp.Header)
-
-	// body, _ := io.ReadAll(resp.Body)
-	// fmt.Println("response Body:", string(body))
-
 	r := VerifyUser_Response{}
 	user.IsMatch = false
 	err = json.NewDecoder(resp.Body).Decode(&r)
@@ -259,6 +352,10 @@ func AIBFarm_Web_VerifyUser(user *VerifyUser) error {
 		log.Print(err)
 		return err
 	}
+
+	// ADD THIS LOGGING
+	log.Printf("API Response for user '%s': Code=%d, Msg=%s, Info=%s",
+		user.Username, r.Code, r.Msg, r.Info)
 
 	if r.Code == 0 {
 		user.IsMatch = true

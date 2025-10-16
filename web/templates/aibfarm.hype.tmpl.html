@@ -1,7 +1,8 @@
 {{define "title"}} AIBFARM {{end}} {{define "content"}}
 
 <script>
-  var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
+  // var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
+  var API_ENDPOINT = "wss://farm-api-hype.aibfarm.com";
   console.log(API_ENDPOINT)
 
 </script>
@@ -198,7 +199,7 @@
 
 <div class="container-fluid">
   <div class="page-title">
-    <h3> OKX交易所 - AIBFARM 实时跟踪 </h3>
+    <h3> Hype 调试窗口 </h3>
   </div>
 
   <div class="card">
@@ -226,17 +227,6 @@
         <span class="number" id="betaCandidate">#</span>
 
       </p>
-      <!-- V5版本 <label class="version-switch">
-        <input type="checkbox" id="v5Toggle">
-        <span class="version-slider"></span>
-      </label> 启用
-      <span id="versionStatus"></span> （需要保持AIB>5000） -->
-      <br>
-      V5.1 稳定版本 <label class="version-switch">
-        <input type="checkbox" id="v5.1Toggle">
-        <span class="version-slider"></span>
-      </label> 启用
-      <span id="versionStatus51"></span> （V5.1 充分利用闲置资金作简单年化3%左右，包括V5目前功能，保持AIB > 5000）
 
 
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
@@ -551,61 +541,11 @@
     // Function to retrieve the authentication token (e.g., from local storage or a cookie)
     return localStorage.getItem('authToken') || 'your-fallback-token';
   }
-
-  //!------------------------ Funcs -----------------------------
-
-  //!-常值
-  function constantvaule() {
-
-    const token = getAuthToken(); // Function to retrieve the authentication token
-    const url = `${API_ENDPOINT}/okrice.ConstantVaule?token=${token}`;
-    console.log(url);
-
-    const c = new WebSocket(url);
-
-    c.onopen = function () {
-      console.log('WebSocket connection established');
-    };
-
-    c.onmessage = function (msg) {
-      // console.log(msg);
-
-      $('#OKRICE_VERSION').empty();
-      const cv = JSON.parse(msg.data);
-      document.getElementById("OKRICE_VERSION").textContent = cv.OKRICE_VERSION;
-      document.getElementById("TradingON").textContent = cv.TradingON;
-
-      document.getElementById("AviableU").textContent = (Math.round((cv.AviableU) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("UnPnl").textContent = (Math.round((cv.UnPnl) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("ProfitLast24Hour").textContent = (Math.round((cv.ProfitLast24Hour) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("ProfitLast7Day").textContent = (Math.round((cv.ProfitLast7Day) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("ProfitLast30Day").textContent = (Math.round((cv.ProfitLast30Day) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("SettlementAIB").textContent = (Math.round((cv.SettlementAIB) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("masterName").textContent = cv.MasterName;
-      document.getElementById("masterRate").textContent = (Math.round((cv.MasterRate) * 1000000) / 1000000).toFixed(2);
-      document.getElementById("name_of_user").textContent = cv.Nickname;;
-      document.getElementById("masterID").textContent = cv.MasterID;
-
-      document.getElementById("betaCandidate").textContent = cv.BetaCandidate;
+</script>
 
 
-      console.log(cv.OKRICE_VERSION)
 
-
-    };
-
-    c.onclose = function (e) {
-      console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-      setTimeout(function () {
-        constantvaule();
-      }, 1000);
-    };
-
-    c.onerror = function (err) {
-      console.error('Socket encountered error: ', err.message, 'Closing socket');
-      c.close();
-    };
-  }
+<script>
 
   //!-目前仓位
   function positions() {
@@ -624,7 +564,7 @@
 
     // url = `wss://okrice.aib.cash/okrice.positions`
     // url = API_ENDPOINT + "/okrice.positions?sort=opens-down"
-    url = `${API_ENDPOINT}/okrice.positions?sort=${sort}&token=${token}`;
+    url = `${API_ENDPOINT}/hype.positions?sort=${sort}&token=${token}`;
 
 
     c = new WebSocket(url)
@@ -801,7 +741,7 @@
   //!-潜在加仓
   function potential() {
     const token = getAuthToken(); // Function to retrieve the authentication token
-    url = `${API_ENDPOINT}/okrice.potentials?token=${token}`;
+    url = `${API_ENDPOINT}/hype.potentials?token=${token}`;
     c = new WebSocket(url)
     // console.log(url)
 
@@ -935,313 +875,24 @@
     }
   }
 
-  //!-交易动作(自动或手动)
-  function fills() {
-    // url = 'wss://okrice.aib.cash/okrice.fills'
-    // url = API_ENDPOINT + "/okrice.fills"
-
-    const token = getAuthToken(); // Function to retrieve the authentication token
-    url = `${API_ENDPOINT}/okrice.fills?token=${token}`;
 
 
-    c = new WebSocket(url)
-    c.onmessage = function (msg) {
-      // console.log(msg)
-
-      $('#fills').empty()
-
-      servers = $.parseJSON(msg.data)
-
-      $.each(servers, function (index, v) {
-
-        const date = new Date(v.ts * 1.0);
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var hour = date.getHours();
-        var minute = date.getMinutes();
-        var seconds = date.getSeconds();
-
-        let onlyCoin = v.instId.replace(/(.*?)\-USDT\-SWAP/, "$1");
-
-
-        $('#fills').append(
-          $(document.createElement('tr')).prop({
-            type: 'tr',
-            innerHTML:
-              `<td>` +
-              month + `月` + day + `日 ` + hour + `:` + minute + `:` + seconds +
-
-              // `</td><td class="align-right">` +
-              //   onlyCoin+//              v.instId +
-              `</td><td class="sticky-left"><a href="https://www.okx.com/cn/balance/report-center/unified/account-historybuy-short	">` +
-              onlyCoin +
-
-              `</td><td>` +
-              bsssString(v.side + `-` + v.posSide) + //              v.side + `-` + v.posSide +
-
-              `</td><td>$` +
-              (Math.round((v.fillPx) * 100000000) / 100000000).toFixed(8) +
-
-              `</td><td>$` +
-              (Math.round((v.fillPnl) * 100000000) / 100000000).toFixed(2) +
-
-              `</td><td>` +
-              (Math.round((v.fillSz) * 100000000) / 100000000).toFixed(0) + `张` +
-
-              // `</td><td>α` +
-              // // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
-              // (-0.6 + Math.round((v.fillPnl) * -100000000) / 10000000).toFixed(0) +
-
-              // `</td><td>α` +
-              // // (Math.round((v.fee) * 100000000) / 100000000).toFixed(2) + `(` + v.feeCcy + `)` +
-              // (0).toFixed(0) +
-
-              `</td>` +
-              ` `,
-          }),
-        )
-
-        // console.log(v)
-      })
-    }
-
-    c.onclose = function (e) {
-      console.log(
-        'Socket is closed. Reconnect will be attempted in 1 second.',
-        e.reason,
-      )
-      setTimeout(function () {
-        fills()
-      }, 1000)
-    }
-
-    c.onerror = function (err) {
-      console.error(
-        'Socket encountered error: ',
-        err.message,
-        'Closing socket',
-      )
-      c.close()
-    }
-  }
-
-
-  function takeprofit() {
-
-    const token = getAuthToken(); // Function to retrieve the authentication token
-    url = `${API_ENDPOINT}/okrice.takeprofit?token=${token}`;
-    c = new WebSocket(url)
-
-    c.onmessage = function (msg) {
-      // console.log(msg)
-
-      $('#takeprofit').empty()
-
-      servers = $.parseJSON(msg.data)
-
-      $.each(servers, function (index, v) {
-
-        // let ratio = 100 * (v.MarkPrice - v.AddPositionPrice) / v.MarkPrice
-        let onlyCoin = v.id.replace(/(.*?)\-USDT\-SWAP/, "$1");
-
-
-        $('#takeprofit').append(
-
-          $(document.createElement('tr')).prop({
-            type: 'tr',
-            innerHTML:
-              `<td>` +
-              (index + 1) +
-              `</td><td class="sticky-left"><a href="https://www.okx.com/cn/trade-swap-strategy/` + v.id + `#layout=5">` +
-              onlyCoin +
-
-              `</td><td class="align-right ` + lsColor(v.Pos) + `">` +
-              lsString(v.Pos) +
-
-              `</td><td  id="` + v.id + `Takeprofit-HighestYeild" class="align-right ` + testcolor(v.Yeild - v.TakeProfitYeild) + `" >` +
-              (Math.round((v.HighestYeild) * 1000000) / 1000000).toFixed(1) + `%` +
-
-
-              `</td><td  id="` + v.id + `Takeprofit-TakeProfitYeild" class="align-right ` + testcolor(v.Yeild - v.TakeProfitYeild) + `" >` +
-              (Math.round((v.TakeProfitYeild) * 1000000) / 1000000).toFixed(1) + `%` +
-
-
-              `</td><td  id="` + v.id + `Takeprofit-Yeild" class="align-right ` + testcolor(v.Yeild - v.YieldGainLV) + `" >` +
-              (Math.round((v.Yeild) * 1000000) / 1000000).toFixed(1) + `%` +
-
-
-              `</td><td  id="` + v.id + `Takeprofit-YeildThreshold" class="align-right ` + testcolor(v.Yeild - v.YieldGainLV) + `" >` +
-              (Math.round((v.YieldGainLV) * 1000000) / 1000000).toFixed(1) + `%` +
-
-
-              `</td><td class="align-right ` + testcolor(v.Insure - v.InsureLV) + `">` +
-              (Math.round((v.Insure) * 1000000) / 1000000).toFixed(1) +
-
-              `</td><td class="align-right ` + testcolor(v.Insure - v.InsureLV) + `">` +
-              (Math.round((v.InsureLV) * 1000000) / 1000000).toFixed(1) +
-
-
-              `</td><td  id="` + v.id + `Takeprofit-MarkPrice" class="align-right">` +
-              v.MarkPrice +
-
-              `</td><td  id="` + v.id + `Takeprofit-Profit" class="align-right">` +
-              (Math.round((v.Profit) * 1000000) / 1000000).toFixed(1) +
-
-
-              `</td><td class="align-right ` + testcolor(v.FundingFee) + `">` +
-              `$` + (Math.round((v.FundingFee) * 1000000) / 1000000).toFixed(2) +
-
-              `</td>` +
-              ` `,
-          }),
-        )
-
-        if (myMap[v.id + 'Takeprofit-MarkPrice'] != v.MarkPrice) {
-          // console.log(v.id + 'Potential-MarkPrice')
-          // console.log(myMap[v.id + 'Potential-MarkPrice'])
-          // console.log(v.MarkPrice)
-          if (myMap[v.id + 'Takeprofit-MarkPrice'] > v.MarkPrice) {
-            animateRed(v.id + "Takeprofit-MarkPrice");
-          } else {
-            animateGreen(v.id + "Takeprofit-MarkPrice");
-          }
-          myMap[v.id + 'Takeprofit-MarkPrice'] = v.MarkPrice
-        }
-
-        if (myMap[v.id + 'Takeprofit-Profit'] != v.MarkPrice) {
-          // console.log(v.id + 'Potential-MarkPrice')
-          // console.log(myMap[v.id + 'Potential-MarkPrice'])
-          // console.log(v.MarkPrice)
-          if (myMap[v.id + 'Takeprofit-Profit'] > v.MarkPrice) {
-            animateRed(v.id + "Takeprofit-Profit");
-          } else {
-            animateGreen(v.id + "Takeprofit-Profit");
-          }
-          myMap[v.id + 'Takeprofit-Profit'] = v.MarkPrice
-        }
+  // takeprofit()
+  // fills()
+  // potential();
+  // positions(); //目前仓位
+  // constantvaule();//常值
 
 
 
-      })
-    }
-
-    c.onclose = function (e) {
-      console.log(
-        'Takeprofit: Socket is closed. Reconnect will be attempted in 1 second.',
-        e.reason,
-      )
-      setTimeout(function () {
-        takeprofit()
-      }, 1000)
-    }
-
-    c.onerror = function (err) {
-      console.error(
-        'Socket encountered error: ',
-        err.message,
-        'Closing socket',
-      )
-      c.close()
-    }
-  }
 
 
-
-  takeprofit()
-  fills()
-  potential();
   positions(); //目前仓位
-  constantvaule();//常值
 
 
 </script>
 
 
-
-<script>
-  // 在原有代码最后添加这部分
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggle = document.getElementById('v5Toggle');
-    const statusEl = document.getElementById('versionStatus');
-
-    // 初始化状态
-    fetch(`https://farm-api.aibfarm.com/okfarm.v5.state?token=${getAuthToken()}`)
-      .then(res => res.json())
-      .then(data => {
-        toggle.checked = data.enabled;
-        statusEl.textContent = data.enabled ? 'ON' : 'OFF';
-      });
-
-    // 切换处理
-    toggle.addEventListener('change', function () {
-      const newState = this.checked;
-      statusEl.textContent = '...';
-
-      fetch(`https://farm-api.aibfarm.com/okfarm.v5.state?token=${getAuthToken()}&enable=${newState}`)
-        .then(res => {
-          if (!res.ok) throw new Error('请求失败');
-          return res.json();
-        })
-        .then(data => {
-          statusEl.textContent = data.enabled ? 'ON' : 'OFF';
-          if (data.enabled !== newState) {
-            toggle.checked = data.enabled; // 同步服务端实际状态
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          toggle.checked = !newState; // 回滚状态
-          statusEl.textContent = toggle.checked ? 'ON' : 'OFF';
-          alert('操作失败，请查看控制台');
-        });
-    });
-  });
-
-
-  // V5.1 Toggle - CORRECTED LOGIC
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggle = document.getElementById('v5.1Toggle');
-    const statusEl = document.getElementById('versionStatus51');
-
-    // Initialization (This part is fine)
-    fetch(`https://farm-api.aibfarm.com/okfarm.v5.1.state?token=${getAuthToken()}`)
-      .then(res => res.json())
-      .then(data => {
-        toggle.checked = data.enabled;
-        statusEl.textContent = data.enabled ? 'ON' : 'OFF';
-      });
-
-    // Toggle handler
-    toggle.addEventListener('change', function () {
-      const newState = this.checked;
-      statusEl.textContent = '...';
-
-      fetch(`https://farm-api.aibfarm.com/okfarm.v5.1.state?token=${getAuthToken()}&enable=${newState}`)
-        .then(res => {
-          // If the server responds with an error status (like 404 or 500), throw an error to trigger the .catch block.
-          if (!res.ok) {
-            throw new Error('Request failed with status ' + res.status);
-          }
-          // If the response is ok (e.g., status 200), we don't need to parse the body.
-          // We can assume the operation was successful.
-          // We update the UI based on the state we intended to set.
-          statusEl.textContent = newState ? 'ON' : 'OFF';
-          toggle.checked = newState;
-        })
-        .catch(err => {
-          // This block will now only run if the network request itself fails or the server returns an error status.
-          console.error('Operation failed:', err);
-
-          // Rollback the UI to the previous state.
-          toggle.checked = !newState;
-          statusEl.textContent = toggle.checked ? 'ON' : 'OFF';
-          alert('Operation failed, please check the console.');
-        });
-    });
-  });
-
-</script>
 
 
 {{end}}
