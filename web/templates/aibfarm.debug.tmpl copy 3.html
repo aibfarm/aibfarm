@@ -4,11 +4,6 @@
   var API_ENDPOINT = "{{.api_endpoint}}" // "ws://192.168.1.1:21881";  
   console.log(API_ENDPOINT)
 
-
-  var BITCOIN_API_ENDPOINT = "https://farm-api.aibfarm.com" // "http://192.168.2.238:12345" // 🆕 Bitcoin API (独立端口)
-  console.log(API_ENDPOINT)
-  console.log("Bitcoin API:", BITCOIN_API_ENDPOINT)
-
 </script>
 
 <style>
@@ -243,26 +238,7 @@
       </label> 启用
       <span id="versionStatus51"></span> （V5.1 充分利用闲置资金作简单年化3%左右，包括V5目前功能，保持AIB > 5000）
 
-      <!-- Bitcoin Buy Module -->
-      <div class="card" style="margin-top: 20px;">
-        <div class="content">
-          <div class="head">
-            <h5 class="mb-0">📊 凭运气买：Bitcoin </h5>
-          </div>
 
-          <p class="text-muted">
-            当前价格: $<span id="btcPrice">--</span><br>
-            可买金额: $<span id="btcBuyAmount">--</span><br>
-            信号状态: <span id="btcSignal" style="font-weight: bold;">--</span>
-          </p>
-
-          <button id="btcBuyButton" style="padding: 10px 30px; font-size: 16px; cursor: pointer;" disabled>
-            购买 Bitcoin
-          </button>
-
-          <div id="btcMessage" style="margin-top: 10px; font-weight: bold;"></div>
-        </div>
-      </div>
       <p class="text-muted">—————————————————————————已开仓 【后继续 -- 加仓 或 减仓获利】 ————————————————————— </p>
       <table id="table-position" class="table  my-table table-striped">
         <thead class="success">
@@ -351,7 +327,8 @@
       </table>
 
 
-
+      <p class="text-muted">————————————————————— 资金流水 —————————————————————
+      <p class="text-muted">————————————————————— 交易动作流水 —————————————————————
     </div>
   </div>
 </div>
@@ -1266,118 +1243,6 @@
 
 </script>
 
-
-<script>
-  //!-- Bitcoin Buy Module
-  function bitcoinModule() {
-    // 🆕 暂时不需要token，因为bitcoin_lucky.go中注释了JWT验证
-    // const token = getAuthToken();
-
-    // Check buy signal every 5 seconds
-    setInterval(function () {
-        const token = getAuthToken(); // Function to retrieve the authentication token
-      fetch(`${BITCOIN_API_ENDPOINT}/okrice.bitcoin.signal?token=${token}`) // 🆕 使用 BITCOIN_API_ENDPOINT
-        .then(res => res.json())
-        .then(data => {
-          console.log("Bitcoin signal data:", data); // 🆕 调试日志
-
-          // Update UI
-          document.getElementById('btcPrice').textContent = data.price.toFixed(2);
-          document.getElementById('btcBuyAmount').textContent = data.amount.toFixed(2);
-          document.getElementById('btcSignal').textContent = data.signal;
-          document.getElementById('btcSignal').style.color = data.canBuy ? 'green' : 'red';
-
-          // Enable/disable button
-          document.getElementById('btcBuyButton').disabled = !data.canBuy;
-        })
-        .catch(err => {
-          console.error('Bitcoin signal error:', err);
-          // 🆕 显示错误信息
-          document.getElementById('btcSignal').textContent = '连接失败';
-          document.getElementById('btcSignal').style.color = 'orange';
-        });
-    }, 5000);
-  }
-
-  // Buy button click handler
-  document.getElementById('btcBuyButton').addEventListener('click', function () {
-    // const token = getAuthToken();
-    const button = this;
-
-    button.disabled = true;
-    button.textContent = '处理中...';
-  const token = getAuthToken(); // Function to retrieve the authentication token
-    fetch(`${BITCOIN_API_ENDPOINT}/okrice.bitcoin.buy?token=${token}`, { // 🆕 使用 BITCOIN_API_ENDPOINT
-      method: 'POST'
-    })
-      .then(res => res.json())
-      .then(data => {
-        const msg = document.getElementById('btcMessage');
-        if (data.success) {
-          msg.textContent = '✅ 购买成功！';
-          msg.style.color = 'green';
-        } else {
-          msg.textContent = '❌ 购买失败: ' + data.error;
-          msg.style.color = 'red';
-        }
-        button.textContent = '购买 Bitcoin';
-        setTimeout(() => msg.textContent = '', 5000);
-      })
-      .catch(err => {
-        const msg = document.getElementById('btcMessage');
-        msg.textContent = '❌ 错误: ' + err;
-        msg.style.color = 'red';
-        button.textContent = '购买 Bitcoin';
-      });
-  });
-
-  // Start the module
-  bitcoinModule();
-
-  // Buy button click handler
-  let isBuying = false; // 🆕 防止重复点击
-
-  document.getElementById('btcBuyButton').addEventListener('click', function () {
-    // 🆕 防止重复点击
-    if (isBuying) {
-      console.log('⚠️ 正在处理中，请勿重复点击');
-      return;
-    }
-
-    const button = this;
-    isBuying = true; // 🆕 锁定
-    button.disabled = true;
-    button.textContent = '处理中...';
-
-    fetch(`${BITCOIN_API_ENDPOINT}/okrice.bitcoin.buy?token=${token}`, { method: 'POST' })
-      .then(res => res.json())
-      .then(data => {
-        const msg = document.getElementById('btcMessage');
-        msg.textContent = data.success ? '✅ 购买成功！' : '❌ 购买失败: ' + data.error;
-        msg.style.color = data.success ? 'green' : 'red';
-        button.textContent = '购买 Bitcoin';
-
-        // 🆕 成功后延迟5秒才能再次购买
-        if (data.success) {
-          setTimeout(() => {
-            isBuying = false;
-          }, 5000);
-        } else {
-          isBuying = false;
-          button.disabled = false;
-        }
-
-        setTimeout(() => msg.textContent = '', 5000);
-      })
-      .catch(err => {
-        document.getElementById('btcMessage').textContent = '❌ 错误: ' + err;
-        button.textContent = '购买 Bitcoin';
-        isBuying = false; // 🆕 解锁
-        button.disabled = false;
-      });
-  });
-
-</script>
 
 {{end}}
 </div>
